@@ -13,11 +13,7 @@ class Interpreter implements Expression.Visitor<Object> {
         if (object == null) return "nil";
 
         if (object instanceof Double) {
-            String text = object.toString();
-            if (text.endsWith(".0")) {
-                text = text.substring(0, text.length() - 2);
-            }
-            return text;
+            parseDoubleToString((double) object);
         }
 
         return object.toString();
@@ -51,6 +47,12 @@ class Interpreter implements Expression.Visitor<Object> {
                 if (left instanceof String && right instanceof String) {
                     return (String)left + (String)right;
                 }
+                if(left instanceof String && right instanceof Double) {
+                    return (String)left + (String)parseDoubleToString((double)right);
+                }
+                if(left instanceof Double && right instanceof String) {
+                    return (String)parseDoubleToString((double)left) + (String)right;
+                }
                 throw new RuntimeError(expr.operator,
                         "Operands must be two numbers or two strings.");
             case SLASH:
@@ -65,6 +67,14 @@ class Interpreter implements Expression.Visitor<Object> {
 
         // Unreachable.
         return null;
+    }
+
+    private String parseDoubleToString(Double value) {
+        String string = value.toString();
+        if(string.endsWith(".0")) {
+            string = string.substring(0, string.length() - 2);
+        }
+        return string;
     }
 
     private void checkNumberOperands(Token operator,
