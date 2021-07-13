@@ -26,35 +26,15 @@ class Interpreter implements Expression.Visitor<Object> {
 
         switch (expr.operator.type) {
             case GREATER:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left > (double)right;
             case GREATER_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left >= (double)right;
             case LESS:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left < (double)right;
             case LESS_EQUAL:
-                checkNumberOperands(expr.operator, left, right);
-                return (double)left <= (double)right;
+                return checkCompOperands(expr.operator, left, right);
             case MINUS:
-                checkNumberOperand(expr.operator, right);
-                return (double)left - (double)right;
+                checkNumberOperands(expr.operator, left, right);
+                return (double) left - (double) right;
             case PLUS:
-                if (left instanceof Double && right instanceof Double) {
-                    return (double)left + (double)right;
-                }
-                if (left instanceof String && right instanceof String) {
-                    return (String)left + (String)right;
-                }
-                if(left instanceof String && right instanceof Double) {
-                    return (String)left + (String)parseDoubleToString((double)right);
-                }
-                if(left instanceof Double && right instanceof String) {
-                    return (String)parseDoubleToString((double)left) + (String)right;
-                }
-                throw new RuntimeError(expr.operator,
-                        "Operands must be two numbers or two strings.");
+                return performPlusOperator(expr.operator, left, right);
             case SLASH:
                 checkNumberOperands(expr.operator, left, right);
                 return (double)left / (double)right;
@@ -67,6 +47,51 @@ class Interpreter implements Expression.Visitor<Object> {
 
         // Unreachable.
         return null;
+    }
+
+    private boolean checkCompOperands(Token operator, Object left, Object right) {
+        if(left instanceof String && right instanceof String) {
+            switch(operator.type) {
+                case GREATER:
+                    return ((String) left).compareTo((String)right) > 0;
+                case GREATER_EQUAL:
+                    return ((String) left).compareTo((String)right) >= 0;
+                case LESS:
+                    return ((String) left).compareTo((String)right) < 0;
+                case LESS_EQUAL:
+                    return ((String) left).compareTo((String)right) <= 0;
+            }
+        }
+        if(left instanceof Double && right instanceof Double) {
+            switch(operator.type) {
+                case GREATER:
+                    return (double) left > (double) right;
+                case GREATER_EQUAL:
+                    return (double) left >= (double) right;
+                case LESS:
+                    return (double) left < (double) right;
+                case LESS_EQUAL:
+                    return (double) left <= (double) right;
+            }
+        }
+        throw new RuntimeError(operator, "Operands must be numbers or strings.");
+    }
+
+    Object performPlusOperator(Token operator, Object left, Object right) {
+        if (left instanceof Double && right instanceof Double) {
+            return (double)left + (double)right;
+        }
+        if (left instanceof String && right instanceof String) {
+            return (String)left + (String)right;
+        }
+        if(left instanceof String && right instanceof Double) {
+            return (String)left + (String)parseDoubleToString((double)right);
+        }
+        if(left instanceof Double && right instanceof String) {
+            return (String)parseDoubleToString((double)left) + (String)right;
+        }
+        throw new RuntimeError(operator,
+                "Operands must be two numbers or two strings.");
     }
 
     private String parseDoubleToString(Double value) {
