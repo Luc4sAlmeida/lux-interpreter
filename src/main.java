@@ -26,7 +26,7 @@ class Lux {
     private static void runFile(String path) throws IOException {
         System.out.println(path);
         byte[] bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), false);
         if(hadError) System.exit(65);
     }
 
@@ -38,12 +38,12 @@ class Lux {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null || line.equals(";;")) break;
-            run(line);
+            run(line, true);
             hadError = false;
         }
     }
 
-    private static void run(String source) {
+    private static void run(String source, boolean REPL) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
@@ -54,7 +54,7 @@ class Lux {
         if (hadError) return;
         if (hadRuntimeError) System.exit(70);
 
-        interpreter.interpret(statements);
+        interpreter.interpret(statements, REPL);
     }
 
     static void error(int line, String message) {
