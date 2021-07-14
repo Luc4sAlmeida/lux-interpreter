@@ -1,35 +1,45 @@
-class ASTPrinter implements Expression.Visitor<String> {
-    String print(Expression expr) {
+class ASTPrinter implements Expr.Visitor<String> {
+    String print(Expr expr) {
         return expr.accept(this);
     }
 
     @Override
-    public String visitBinaryExpr(Expression.Binary expr) {
+    public String visitBinaryExpr(Expr.Binary expr) {
         return parenthesize(expr.operator.lexeme,
                 expr.left, expr.right);
     }
 
     @Override
-    public String visitGroupingExpr(Expression.Grouping expr) {
+    public String visitGroupingExpr(Expr.Grouping expr) {
         return parenthesize("group", expr.expression);
     }
 
     @Override
-    public String visitLiteralExpr(Expression.Literal expr) {
+    public String visitLiteralExpr(Expr.Literal expr) {
         if (expr.value == null) return "nil";
         return expr.value.toString();
     }
 
     @Override
-    public String visitUnaryExpr(Expression.Unary expr) {
+    public String visitUnaryExpr(Expr.Unary expr) {
         return parenthesize(expr.operator.lexeme, expr.right);
     }
 
-    private String parenthesize(String name, Expression... exprs) {
+    @Override
+    public String visitVariableExpr(Expr.Variable expr) {
+        return expr.name.lexeme;
+    }
+
+    @Override
+    public String visitAssignExpr(Expr.Assign expr) {
+        return "";
+    }
+
+    private String parenthesize(String name, Expr... exprs) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("(").append(name);
-        for (Expression expr : exprs) {
+        for (Expr expr : exprs) {
             builder.append(" ");
             builder.append(expr.accept(this));
         }
@@ -39,13 +49,13 @@ class ASTPrinter implements Expression.Visitor<String> {
     }
 
     public static void main(String[] args) {
-        Expression expression = new Expression.Binary(
-                new Expression.Unary(
+        Expr expression = new Expr.Binary(
+                new Expr.Unary(
                         new Token(TokenType.MINUS, "-", null, 1),
-                        new Expression.Literal(123)),
+                        new Expr.Literal(123)),
                 new Token(TokenType.STAR, "*", null, 1),
-                new Expression.Grouping(
-                        new Expression.Literal(45.67)));
+                new Expr.Grouping(
+                        new Expr.Literal(45.67)));
 
         System.out.println(new ASTPrinter().print(expression));
     }

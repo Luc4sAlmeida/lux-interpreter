@@ -24,6 +24,7 @@ class Lux {
     }
 
     private static void runFile(String path) throws IOException {
+        System.out.println(path);
         byte[] bytes = Files.readAllBytes(Paths.get(path));
         run(new String(bytes, Charset.defaultCharset()));
         if(hadError) System.exit(65);
@@ -47,13 +48,13 @@ class Lux {
         List<Token> tokens = scanner.scanTokens();
 
         Parser parser = new Parser(tokens);
-        Expression expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         // Stop if there was a syntax error.
         if (hadError) return;
         if (hadRuntimeError) System.exit(70);
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     static void error(int line, String message) {
